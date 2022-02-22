@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
+        <title>Light/Dark Model</title>
+
+        <style>
+            html,
+            body {
+                margin: 0;
+                overflow: auto;
+            }
+            .dark {
+                background-color: #212121;
+                color: #eee;
+            }
+        </style>
+    </head>
+
+    <body>
+        <main>
+            <header>
+                <h1>Light/Dark Model</h1>
+            </header>
+            <section>
+                <h2><b>Today: </b><span id="today"></span></h2>
+                <p><b>Sunrise at: </b><span id="sunrise"></span></p>
+                <p><b>Sunset at: </b><span id="sunset"></span></p>
+            </section>
+        </main>
+        <!--
+            [suncalc.js] is used to caculate times of sunrise and sunset,
+            and it holds more utilities good to try.
+            author: Vladimir Agafonkin
+            github: https://github.com/mourner/suncalc
+        -->
+        <script src="js/suncalc.js"></script>
+
+        <script>
+            var $ = function (id) {
+                return document.getElementById(id);
+            };
+
+            function lightDarkModel() {
+                var now = new Date(),
+                    tomorrow = new Date(now.valueOf() + 24 * 60 * 60 * 1000);
+
+                // get today's sunlight times for London
+                // getTimes(Date, lat, long)
+                var timesToday = SunCalc.getTimes(now, 29.5, 106.4),
+                    timesTommorow = SunCalc.getTimes(
+                        tomorrow,
+                        29.593628,
+                        106.455955
+                    );
+
+                var bodyClasses = document.body.className;
+
+                // compat for lte IE7
+                // add class attribute not working lte IE7
+                var lteIE = navigator.userAgent.match(/MSIE ([\d\.]+)/);
+                if (!!lteIE && lteIE[1] <= 7) {
+                    attrClass = 'className';
+                } else {
+                    attrClass = 'class';
+                }
+
+                if (
+                    now.valueOf() < timesToday.sunrise.valueOf() ||
+                    now.valueOf() > timesToday.sunset.valueOf()
+                ) {
+                    // active dark model
+                    bodyClasses = bodyClasses.replace(/ ?light/, '');
+                    document.body.setAttribute(
+                        attrClass,
+                        bodyClasses === '' ? 'dark' : bodyClasses + ' dark'
+                    );
+                    // for quirks mode
+                    document.body.setAttribute(
+                        'class',
+                        bodyClasses === '' ? 'dark' : bodyClasses + ' dark'
+                    );
+                } else {
+                    // active light model
+                    bodyClasses = bodyClasses.replace(/ ?dark/, '');
+                    document.body.setAttribute(
+                        attrClass,
+                        bodyClasses === '' ? 'light' : bodyClasses + ' light'
+                    );
+                    // for quirks mode
+                    document.body.setAttribute(
+                        'class',
+                        bodyClasses === '' ? 'light' : bodyClasses + ' light'
+                    );
+                }
+
+                // change light/dark model at sunrise on tommorow
+                var timeLag = timesTommorow.sunrise.valueOf() - now.valueOf();
+                setTimeout(function () {
+                    bodyClasses = bodyClasses.replace(/ ?dark/, '');
+                    document.body.setAttribute(
+                        attrClass,
+                        bodyClasses === '' ? 'light' : bodyClasses + ' light'
+                    );
+                    // for quirks mode
+                    document.body.setAttribute(
+                        'class',
+                        bodyClasses === '' ? 'light' : bodyClasses + ' light'
+                    );
+                }, timeLag);
+
+                // format sunrise time from the Date object
+                var sunriseStr =
+                        timesToday.sunrise.getHours() +
+                        ':' +
+                        timesToday.sunrise.getMinutes(),
+                    sunsetStr =
+                        timesToday.sunset.getHours() +
+                        ':' +
+                        timesToday.sunset.getMinutes();
+
+                var currentDate = $('today'),
+                    tagSunrise = $('sunrise'),
+                    tagSunset = $('sunset');
+
+                currentDate.insertAdjacentText(
+                    'afterbegin',
+                    now.toLocaleDateString()
+                );
+                tagSunrise.insertAdjacentText('afterbegin', sunriseStr);
+                tagSunset.insertAdjacentText('afterbegin', sunsetStr);
+            }
+            lightDarkModel();
+        </script>
+    </body>
+</html>
