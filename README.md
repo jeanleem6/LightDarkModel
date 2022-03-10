@@ -9,4 +9,3 @@ Set Dark/Light Model for a Web page automatically. Set to be dark model before s
 -   Chrome
 -   Firefox
 -   Opera
--   UC
